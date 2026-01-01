@@ -90,6 +90,9 @@ task.spawn(function()
     end
 end)
 
+
+
+
 -- Auto equip and punch
 task.spawn(function()
     local Backpack = LocalPlayer:WaitForChild("Backpack")
