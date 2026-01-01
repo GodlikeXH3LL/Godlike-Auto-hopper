@@ -1,134 +1,98 @@
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local UIGradient = Instance.new("UIGradient")
-local UICorner = Instance.new("UICorner")
-local TextLabel = Instance.new("TextLabel")
-local UICorner_2 = Instance.new("UICorner")
-local TextButton = Instance.new("TextButton")
-local UICorner_3 = Instance.new("UICorner")
-local TextButton_2 = Instance.new("TextButton")
-local UICorner_4 = Instance.new("UICorner")
-local ImageButton = Instance.new("ImageButton")
-local UICorner_5 = Instance.new("UICorner")
-local TextLabel_2 = Instance.new("TextLabel")
-local ImageButton_2 = Instance.new("ImageButton")
-local UICorner_6 = Instance.new("UICorner")
-local TextLabel_3 = Instance.new("TextLabel")
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Properties
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 100)
+frame.Position = UDim2.new(0.5, -100, 0.5, -50)
+frame.BackgroundColor3 = Color3.new(1, 1, 1)
+frame.Parent = screenGui
 
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 20)
+title.Position = UDim2.new(0, 0, 0, -20)
+title.Text = "Key System Enchanted Hub"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundColor3 = Color3.new(0, 0, 0)
+title.Parent = frame
 
-Frame.Parent = ScreenGui
-Frame.AnchorPoint = Vector2.new(0.5, 0.5)
-Frame.BackgroundColor3 = Color3.fromRGB(114, 114, 255)
-Frame.BorderSizePixel = 0
-Frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-Frame.Size = UDim2.new(0, 374, 0, 310)
+local dragging
+local dragInput
+local dragStart
+local startPos
 
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0.00, Color3.fromRGB(0, 0, 0)),
-    ColorSequenceKeypoint.new(0.49, Color3.fromRGB(179, 0, 0)),
-    ColorSequenceKeypoint.new(1.00, Color3.fromRGB(0, 0, 0))
-}
-UIGradient.Rotation = -89
-UIGradient.Transparency = NumberSequence.new{
-    NumberSequenceKeypoint.new(0.00, 0.00),
-    NumberSequenceKeypoint.new(0.50, 0.76),
-    NumberSequenceKeypoint.new(1.00, 0.00)
-}
-UIGradient.Parent = Frame
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
 
-UICorner.CornerRadius = UDim.new(0, 35)
-UICorner.Parent = Frame
+title.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
 
-TextLabel.Parent = ScreenGui
-TextLabel.AnchorPoint = Vector2.new(0.5, 0.5)
-TextLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel.BackgroundTransparency = 0.500
-TextLabel.BorderSizePixel = 0
-TextLabel.Position = UDim2.new(0.5, 0, 0.2, 0)
-TextLabel.Size = UDim2.new(0, 254, 0, 60)
-TextLabel.Font = Enum.Font.Unknown
-TextLabel.Text = "THE GATEWAY"
-TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TextLabel.TextSize = 40
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
 
-UICorner_2.CornerRadius = UDim.new(0, 35)
-UICorner_2.Parent = TextLabel
+title.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
 
-TextButton.Parent = ScreenGui
-TextButton.AnchorPoint = Vector2.new(0.5, 0.5)
-TextButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextButton.BackgroundTransparency = 1
-TextButton.BorderSizePixel = 0
-TextButton.Position = UDim2.new(0.5, 0, 0.45, 0)
-TextButton.Size = UDim2.new(0, 200, 0, 50)
-TextButton.Font = Enum.Font.Unknown
-TextButton.Text = "ENTER KEY"
-TextButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextButton.TextSize = 25
+title.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+        dragInput = nil
+    end
+end)
 
-UICorner_3.CornerRadius = UDim.new(0, 50)
-UICorner_3.Parent = TextButton
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
 
-TextButton_2.Parent = ScreenGui
-TextButton_2.AnchorPoint = Vector2.new(0.5, 0.5)
-TextButton_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-TextButton_2.BackgroundTransparency = 1
-TextButton_2.BorderSizePixel = 0
-TextButton_2.Position = UDim2.new(0.5, 0, 0.65, 0)
-TextButton_2.Size = UDim2.new(0, 78, 0, 66)
-TextButton_2.Font = Enum.Font.Unknown
-TextButton_2.Text = "GET KEY"
-TextButton_2.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextButton_2.TextSize = 14
+local KeySystem = Instance.new("TextBox")
+KeySystem.Size = UDim2.new(1, 0, 0.5, 0)
+KeySystem.Position = UDim2.new(0, 0, 0, 0)
+KeySystem.Text = "Enter the Key"
+KeySystem.TextColor3 = Color3.new(0, 0, 0)
+KeySystem.BackgroundTransparency = 0.5
+KeySystem.BackgroundColor3 = Color3.new(1, 1, 1)
+KeySystem.TextWrapped = true
+KeySystem.Parent = frame
 
-UICorner_4.CornerRadius = UDim.new(0, 25)
-UICorner_4.Parent = TextButton_2
+local SubmitButton = Instance.new("TextButton")
+SubmitButton.Size = UDim2.new(0.5, 0, 0.5, 0)
+SubmitButton.Position = UDim2.new(0, 0, 0.5, 0)
+SubmitButton.Text = "Submit"
+SubmitButton.Parent = frame
 
-ImageButton.Parent = ScreenGui
-ImageButton.AnchorPoint = Vector2.new(0.5, 0.5)
-ImageButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ImageButton.BorderSizePixel = 0
-ImageButton.Position = UDim2.new(0.35, 0, 0.85, 0)
-ImageButton.Size = UDim2.new(0, 84, 0, 74)
-ImageButton.Image = "rbxassetid://10367063084"
+local CloseButton = Instance.new("TextButton")
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -20, 0, 0)
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.new(1, 1, 1)
+CloseButton.BackgroundColor3 = Color3.new(1, 0, 0)
+CloseButton.Parent = frame
 
-UICorner_5.CornerRadius = UDim.new(0, 12)
-UICorner_5.Parent = ImageButton
+CloseButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
 
-TextLabel_2.Parent = ScreenGui
-TextLabel_2.AnchorPoint = Vector2.new(0.5, 0.5)
-TextLabel_2.BackgroundTransparency = 1
-TextLabel_2.BorderSizePixel = 0
-TextLabel_2.Position = UDim2.new(0.35, 0, 0.72, 0)
-TextLabel_2.Size = UDim2.new(0, 89, 0, 36)
-TextLabel_2.Font = Enum.Font.Kalam
-TextLabel_2.Text = "DISCORD"
-TextLabel_2.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel_2.TextSize = 30
-
-ImageButton_2.Parent = ScreenGui
-ImageButton_2.AnchorPoint = Vector2.new(0.5, 0.5)
-ImageButton_2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-ImageButton_2.BorderSizePixel = 0
-ImageButton_2.Position = UDim2.new(0.65, 0, 0.85, 0)
-ImageButton_2.Size = UDim2.new(0, 87, 0, 74)
-ImageButton_2.Image = "rbxassetid://1275974022"
-
-UICorner_6.CornerRadius = UDim.new(0, 12)
-UICorner_6.Parent = ImageButton_2
-
-TextLabel_3.Parent = ScreenGui
-TextLabel_3.AnchorPoint = Vector2.new(0.5, 0.5)
-TextLabel_3.BackgroundTransparency = 1
-TextLabel_3.BorderSizePixel = 0
-TextLabel_3.Position = UDim2.new(0.65, 0, 0.72, 0)
-TextLabel_3.Size = UDim2.new(0, 86, 0, 35)
-TextLabel_3.Font = Enum.Font.Kalam
-TextLabel_3.Text = "YOUTUBE"
-TextLabel_3.TextColor3 = Color3.fromRGB(0, 0, 0)
-TextLabel_3.TextSize = 30
+local GetKeyButton = Instance.new("TextButton")
+GetKeyButton.Size = UDim2.new(0.5, 0, 0.5, 0)
+GetKeyButton.Position = UDim2.new(0.5, 0, 0.5, 0)
+GetKeyButton.Text = "Copy Key Link"
+GetKeyButton.Parent = frame
+--------------------------------------------------------------------------
+SubmitButton.MouseButton1Click:Connect(function()
+    local KeySystem = KeySystem.Text
+    if KeySystem == "iblameaabis" then   
+screenGui:Destroy()
