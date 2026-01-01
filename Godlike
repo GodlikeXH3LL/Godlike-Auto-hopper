@@ -15,7 +15,7 @@ local function find18Or19PlayerServer()
     repeat
         local url = "https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Desc&limit=100"
         if cursor then
-            url = url.."&cursor="..cursor
+            url = url .. "&cursor=" .. cursor
         end
 
         local success, response = pcall(function()
@@ -126,3 +126,56 @@ task.spawn(function()
         task.wait(0.1)
     end
 end)
+
+getgenv().fastHit = true
+
+task.spawn(function()
+    while getgenv().fastHit do
+        local plr = Players.LocalPlayer
+        local tool = plr.Backpack:FindFirstChild("Punch")
+        if tool then
+            tool.Parent = plr.Character
+        end
+        local muscleEvent = plr:FindFirstChild("muscleEvent")
+        if muscleEvent then
+            muscleEvent:FireServer("punch", "rightHand")
+            muscleEvent:FireServer("punch", "leftHand")
+        end
+        local punchTool = plr.Character and plr.Character:FindFirstChild("Punch")
+        if punchTool then
+            punchTool:Activate()
+        end
+        task.wait()
+    end
+end)
+
+local function OptimizeGame()
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("Texture") or obj:IsA("Decal") then
+            if not obj:IsDescendantOf(LocalPlayer.Character) then
+                obj:Destroy()
+            end
+        end
+    end
+
+    local camera = workspace.CurrentCamera
+    if camera then
+        for _, part in ipairs(workspace:GetChildren()) do
+            if (part:IsA("Part") or part:IsA("MeshPart")) then
+                if (part.Position - camera.CFrame.Position).Magnitude > 500 then
+                    part:Destroy()
+                end
+            end
+        end
+    end
+
+    for _, gui in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
+        if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
+            gui.Image = ""
+        end
+    end
+
+    collectgarbage("collect")
+end
+
+OptimizeGame()
