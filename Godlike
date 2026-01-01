@@ -15,7 +15,7 @@ local function find18Or19PlayerServer()
     repeat
         local url = "https://games.roblox.com/v1/games/"..placeId.."/servers/Public?sortOrder=Desc&limit=100"
         if cursor then
-            url = url .. "&cursor=" .. cursor
+            url = url.."&cursor="..cursor
         end
 
         local success, response = pcall(function()
@@ -127,55 +127,67 @@ task.spawn(function()
     end
 end)
 
-getgenv().fastHit = true
-
 task.spawn(function()
-    while getgenv().fastHit do
-        local plr = Players.LocalPlayer
-        local tool = plr.Backpack:FindFirstChild("Punch")
-        if tool then
-            tool.Parent = plr.Character
+                while _G.fastHit do
+                    local plr = Players.LocalPlayer
+                    local tool = plr.Backpack:FindFirstChild("Punch")
+                    if tool then tool.Parent = plr.Character end
+                    plr.muscleEvent:FireServer("punch", "rightHand")
+                    plr.muscleEvent:FireServer("punch", "leftHand")
+                    local punchTool = plr.Character and plr.Character:FindFirstChild("Punch")
+                    if punchTool then punchTool:Activate() end
+                    task.wait()
+                end
+            end)
         end
-        local muscleEvent = plr:FindFirstChild("muscleEvent")
-        if muscleEvent then
-            muscleEvent:FireServer("punch", "rightHand")
-            muscleEvent:FireServer("punch", "leftHand")
-        end
-        local punchTool = plr.Character and plr.Character:FindFirstChild("Punch")
-        if punchTool then
-            punchTool:Activate()
-        end
-        task.wait()
     end
-end)
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local Lighting = game:GetService("Lighting")
+
+local localPlayer = Players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 
 local function OptimizeGame()
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Texture") or obj:IsA("Decal") then
-            if not obj:IsDescendantOf(LocalPlayer.Character) then
-                obj:Destroy()
-            end
+    for _, obj in ipairs(Workspace:GetDescendants()) do
+        if (obj:IsA("Texture") or obj:IsA("Decal")) and not obj:IsDescendantOf(character) do
+            obj:Destroy()
+        elseif obj:IsA("BasePart") and not obj:IsDescendantOf(character) do
+            obj.Material = Enum.Material.SmoothPlastic
+        elseif obj:IsA("SurfaceAppearance") then
+            obj:Destroy()
         end
     end
 
-    local camera = workspace.CurrentCamera
-    if camera then
-        for _, part in ipairs(workspace:GetChildren()) do
-            if (part:IsA("Part") or part:IsA("MeshPart")) then
-                if (part.Position - camera.CFrame.Position).Magnitude > 500 then
-                    part:Destroy()
-                end
-            end
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 100000
+    Lighting.Brightness = 1
+    for _, effect in ipairs(Lighting:GetChildren()) do
+        if effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
+           effect:IsA("SunRaysEffect") or effect:IsA("ColorCorrectionEffect") or 
+           effect:IsA("DepthOfFieldEffect") then
+            effect.Enabled = false
         end
     end
 
-    for _, gui in ipairs(LocalPlayer.PlayerGui:GetDescendants()) do
+    local playerGui = localPlayer:WaitForChild("PlayerGui")
+    for _, gui in ipairs(playerGui:GetDescendants()) do
         if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
             gui.Image = ""
         end
     end
 
+    settings().Rendering.QualityLevel = 1
+
     collectgarbage("collect")
 end
 
 OptimizeGame()
+
+spawn(function()
+    while true do
+        wait(10)
+        OptimizeGame()
+    end
+end)
