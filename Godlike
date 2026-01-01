@@ -13,56 +13,20 @@ local window = library:AddWindow("Private Auto Hopper", {
 local AutoKill = window:AddTab("Auto Kill")
 local Folder1 = AutoKill:AddFolder("Auto kill + hop")
 
-Folder1:AddSwitch("Auto Kill + hop", function(bool)
-    _G.Autokill = bool
-
-    if bool then
-        spawn(function()
-            while _G.Autokill do
-                task.wait()
-
-                local success = false
-
-                for _, plr in ipairs(Players:GetPlayers()) do
-                    if plr ~= player then
-                        local isWhitelisted = false
-
-                        if _G.whitelistedPlayers then
-                            for _, whitelistedInfo in ipairs(_G.whitelistedPlayers) do
-                                if string.find(plr.Name, whitelistedInfo, 1, true) then
-                                    isWhitelisted = true
-                                    break
-                                end
-                            end
-                        end
-
-                        if not isWhitelisted then
-                            killPlayer(plr)
-                            success = true
-                        end
-                    end
-                end
-
-                if not success then
-                    local servers = {}
-                    repeat
-                        local cursor = #servers > 0 and servers[#servers].cursor or ""
-                        local url = string.format("https://games.roblox.com/v1/games/%s/servers/Public?sortOrder=Asc&limit=100%s", game.PlaceId, cursor ~= "" and "&cursor=" .. cursor or "")
-                        local res = game:HttpGet(url)
-                        local data = game.HttpService:JSONDecode(res)
-                        for _, v in ipairs(data.data) do
-                            if v.playing < v.maxPlayers and v.id ~= game.JobId then
-                                table.insert(servers, v)
-                            end
-                        end
-                    until not data.nextPageCursor
-
-                    if #servers > 0 then
-                        local randomServer = servers[math.random(1, #servers)]
-                        TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer.id, player)
+Folder1:AddSwitch("Auto Kill + hop", function(state)
+    getgenv().autokill = state
+    task.spawn(function()
+        while getgenv().autokill and LocalPlayer.Character do
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer and not table.find(getgenv().whitelist or {}, player.Name) then
+                    if player.Character and player.Character.HumanoidRootPart then
+                        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                        ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                        ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
                     end
                 end
             end
-        end)
-    end
+            task.wait(0.1)
+        end
+    end)
 end)
