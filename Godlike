@@ -3,11 +3,6 @@ local LocalPlayer = Players.LocalPlayer
 local TeleportService = game:GetService("TeleportService")
 local HttpService = game:GetService("HttpService")
 
-local excludedNames = {
-    ["U3RT_SOVIETxKILLA"] = false,
-    ["U3RT_KILLAxSOVIET"] = false,
-}
-
 local placeId = game.PlaceId
 
 local function find18Or19PlayerServer()
@@ -19,7 +14,15 @@ local function find18Or19PlayerServer()
         end
 
         local success, response = pcall(function()
-            return HttpService:JSONDecode(game:HttpGet(url))
+            return HttpService:GetAsync(url, true)
+        end)
+
+        if not success then
+            break
+        end
+
+        success, response = pcall(function()
+            return HttpService:JSONDecode(response)
         end)
 
         if success and response and response.data then
@@ -72,7 +75,7 @@ task.spawn(function()
     while true do
         task.wait(2)
         for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.DisplayName == "U3RT_SOVIETxKILLA" then
+            if player ~= LocalPlayer and player.Name == "U3RT_SOVIETxKILLA" or player.Name == "U3RT_KILLAxSOVIET" then
                 hopToServer()
                 return
             end
@@ -85,7 +88,7 @@ task.spawn(function()
         task.wait(0.3)
         local char = LocalPlayer.Character
         local hum = char and char:FindFirstChildOfClass("Humanoid")
-        if hum then
+        if hum and hum.Health < hum.MaxHealth then
             hum.Health = hum.MaxHealth
         end
     end
@@ -99,8 +102,8 @@ local function killTarget(target)
     local char = getCharacter()
     if char and target.Character then
         local root = target.Character:FindFirstChild("HumanoidRootPart")
-        local leftHand = char:FindFirstChild("LeftHand")
-        local rightHand = char:FindFirstChild("RightHand")
+        local leftHand = char:FindFirstChild("LeftHand") or char:FindFirstChild("Left Hand")
+        local rightHand = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Hand")
         if root and (leftHand or rightHand) then
             if leftHand then
                 firetouchinterest(root, leftHand, 0)
@@ -118,42 +121,50 @@ getgenv().killAll = true
 
 task.spawn(function()
     while getgenv().killAll do
+        task.wait(0.1)
         for _, p in pairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Humanoid") then
+            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character:FindFirstChild("Humanoid").Health > 0 then
                 killTarget(p)
             end
         end
-        task.wait(0.1)
     end
 end)
 
-task.spawn(function()
-                while _G.fastHit do
-                    local plr = Players.LocalPlayer
-                    local tool = plr.Backpack:FindFirstChild("Punch")
-                    if tool then tool.Parent = plr.Character end
-                    plr.muscleEvent:FireServer("punch", "rightHand")
-                    plr.muscleEvent:FireServer("punch", "leftHand")
-                    local punchTool = plr.Character and plr.Character:FindFirstChild("Punch")
-                    if punchTool then punchTool:Activate() end
-                    task.wait()
-                end
-            end)
-        end
-    end
+getgenv().fastHit = true
 
-local Players = game:GetService("Players")
+task.spawn(function()
+    while getgenv().fastHit do
+        local plr = Players.LocalPlayer
+        local char = plr.Character
+        if char then
+            local tool = plr.Backpack:FindFirstChild("Punch")
+            if tool then
+                tool.Parent = char
+            end
+            local punchTool = char:FindFirstChild("Punch")
+            if punchTool then
+                local muscleEvent = plr:FindFirstChild("muscleEvent")
+                if muscleEvent and muscleEvent:IsA("RemoteEvent") then
+                    muscleEvent:FireServer("punch", "rightHand")
+                    muscleEvent:FireServer("punch", "leftHand")
+                end
+                punchTool:Activate()
+            end
+        end
+        task.wait()
+    end
+end)
+
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 
-local localPlayer = Players.LocalPlayer
-local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-
 local function OptimizeGame()
     for _, obj in ipairs(Workspace:GetDescendants()) do
-        if (obj:IsA("Texture") or obj:IsA("Decal")) and not obj:IsDescendantOf(character) do
-            obj:Destroy()
-        elseif obj:IsA("BasePart") and not obj:IsDescendantOf(character) do
+        if obj:IsA("Texture") or obj:IsA("Decal") then
+            if not obj:IsDescendantOf(LocalPlayer.Character) then
+                obj:Destroy()
+            end
+        elseif obj:IsA("BasePart") and not obj:IsDescendantOf(LocalPlayer.Character) then
             obj.Material = Enum.Material.SmoothPlastic
         elseif obj:IsA("SurfaceAppearance") then
             obj:Destroy()
@@ -163,6 +174,7 @@ local function OptimizeGame()
     Lighting.GlobalShadows = false
     Lighting.FogEnd = 100000
     Lighting.Brightness = 1
+
     for _, effect in ipairs(Lighting:GetChildren()) do
         if effect:IsA("BloomEffect") or effect:IsA("BlurEffect") or 
            effect:IsA("SunRaysEffect") or effect:IsA("ColorCorrectionEffect") or 
@@ -171,23 +183,21 @@ local function OptimizeGame()
         end
     end
 
-    local playerGui = localPlayer:WaitForChild("PlayerGui")
+    local playerGui = LocalPlayer:WaitForChild("PlayerGui")
     for _, gui in ipairs(playerGui:GetDescendants()) do
         if gui:IsA("ImageLabel") or gui:IsA("ImageButton") then
             gui.Image = ""
         end
     end
 
-    settings().Rendering.QualityLevel = 1
-
-    collectgarbage("collect")
+    settings().Rendering.QualityLevel = Enum.RenderingQualityLevel.Level01
 end
 
 OptimizeGame()
 
-spawn(function()
+task.spawn(function()
     while true do
-        wait(10)
+        task.wait(10)
         OptimizeGame()
     end
 end)
