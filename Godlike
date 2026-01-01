@@ -21,46 +21,39 @@ local dragStart
 local startPos
 
 local function update(input)
-    local delta = input.Position - dragStart
-    frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
 title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = frame.Position
 
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
 end)
 
 title.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
-
-title.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-        dragInput = nil
-    end
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
 end)
 
 game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        update(input)
-    end
+	if dragging and input == dragInput then
+		update(input)
+	end
 end)
 
 local KeySystem = Instance.new("TextBox")
 KeySystem.Size = UDim2.new(1, 0, 0.5, 0)
-KeySystem.Position = UDim2.new(0, 0, 0, 0)
+KeySystem.Position = UDim2.new(0, 0, 0, 20)
 KeySystem.Text = "Enter the Key"
 KeySystem.TextColor3 = Color3.new(0, 0, 0)
 KeySystem.BackgroundTransparency = 0.5
@@ -83,7 +76,7 @@ CloseButton.BackgroundColor3 = Color3.new(1, 0, 0)
 CloseButton.Parent = frame
 
 CloseButton.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
+	screenGui:Destroy()
 end)
 
 local GetKeyButton = Instance.new("TextButton")
@@ -91,8 +84,9 @@ GetKeyButton.Size = UDim2.new(0.5, 0, 0.5, 0)
 GetKeyButton.Position = UDim2.new(0.5, 0, 0.5, 0)
 GetKeyButton.Text = "Copy Key Link"
 GetKeyButton.Parent = frame
---------------------------------------------------------------------------
+
 SubmitButton.MouseButton1Click:Connect(function()
-    local KeySystem = KeySystem.Text
-    if KeySystem == "iblameaabis" then   
-screenGui:Destroy()
+	if KeySystem.Text == "iblameaabis" then
+		screenGui:Destroy()
+	end
+end)
